@@ -1,0 +1,32 @@
+# Dépendances
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Variables d'environnement (IMPORTANT : ne jamais publier les clés !)
+.env
+.env.local
+.env.*.local
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Scripts de base de données locaux (pas utiles sur GitHub)
+check_users.js
+list_auth_users.js
+test_login.js
+test_supabase.js
+check_web.js
+fix_rls.js
+generate_sql.js
+remplir_base.js
+remplir_100_posts.js
+seed_1000_images.js

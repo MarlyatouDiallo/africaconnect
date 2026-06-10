@@ -147,7 +147,27 @@ export const useStore = create(
           post_id: postId,
           created_at: new Date().toISOString()
         };
-        return { favorites: [...state.favorites, newFav] };
+
+        // Add internal app notification if this post belongs to someone else
+        const targetPost = state.posts.find(p => p.id === postId);
+        let newNotifications = [...state.notifications];
+        if (targetPost && targetPost.user_id !== userId) {
+          const sender = state.users.find(u => u.id === userId) || state.user;
+          const newNotif = {
+            id: `notif_${Date.now()}`,
+            type: 'favorite',
+            sender,
+            post_image: targetPost.image_url,
+            created_at: new Date().toISOString(),
+            read: false
+          };
+          newNotifications = [newNotif, ...newNotifications];
+        }
+
+        return { 
+          favorites: [...state.favorites, newFav],
+          notifications: newNotifications
+        };
       }),
 
       unfavoritePostStore: (postId, userId) => set((state) => ({

@@ -18,12 +18,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../../store/zustand/useStore';
 import { THEME } from '../../utils/constants';
 import { useAuth } from '../../hooks/useAuth';
+import { usePosts } from '../../hooks/usePosts';
 
 export default function EditProfileScreen({ navigation }) {
   const themeMode = useStore((state) => state.theme);
   const colors = THEME[themeMode];
 
   const { user, updateProfile, loading, error: authError } = useAuth();
+  const { createPost } = usePosts();
 
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -55,6 +57,21 @@ export default function EditProfileScreen({ navigation }) {
 
     try {
       await updateProfile(username.trim().toLowerCase(), bio.trim(), avatar);
+      
+      // If the avatar was changed, create a post automatically
+      if (avatar !== user?.avatar) {
+        try {
+          await createPost({
+            description: `J'ai mis à jour ma photo de profil ! 📸✨`,
+            category: 'portrait',
+            imageUri: avatar,
+            privacy: 'public'
+          });
+        } catch (postError) {
+          console.error("Erreur lors de la création du post de profil:", postError);
+        }
+      }
+
       setSuccessMsg("Votre profil a été mis à jour avec succès !");
       setTimeout(() => {
         navigation.goBack();

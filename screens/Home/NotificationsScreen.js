@@ -21,6 +21,7 @@ export default function NotificationsScreen() {
     else if (item.type === 'comment') actionText = `a commenté : "${item.content}"`;
     else if (item.type === 'follow') actionText = 'a commencé à vous suivre.';
     else if (item.type === 'post') actionText = 'a publié une nouvelle photo.';
+    else if (item.type === 'favorite') actionText = 'a ajouté votre photo à ses favoris.';
 
     return (
       <View style={[styles.notificationCard, { backgroundColor: item.read ? colors.card : colors.background, borderBottomColor: colors.border }]}>

@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../../store/zustand/useStore';
 import { THEME } from '../../utils/constants';
@@ -30,17 +31,17 @@ export default function EditProfileScreen({ navigation }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [inputError, setInputError] = useState('');
 
-  const handleChooseAvatar = () => {
-    // Simulated random avatar selection for mobile web demo convenience
-    const mockAvatars = [
-      'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200',
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200',
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200',
-      'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200'
-    ];
-    const newAvatar = mockAvatars[Math.floor(Math.random() * mockAvatars.length)];
-    setAvatar(newAvatar);
+  const handleChooseAvatar = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
   };
 
   const handleSave = async () => {

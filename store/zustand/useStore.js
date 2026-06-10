@@ -62,9 +62,23 @@ export const useStore = create(
 
       // Posts CRUD
       setPosts: (posts) => set({ posts }),
-      addPost: (post) => set((state) => ({
-        posts: [post, ...state.posts]
-      })),
+      addPost: (post) => set((state) => {
+        const sender = state.users.find(u => u.id === post.user_id) || state.user;
+        const followers = state.followers.filter(f => f.following_id === post.user_id);
+        const newNotifs = followers.map(f => ({
+          id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+          type: 'post',
+          sender,
+          post_image: post.image_url,
+          created_at: new Date().toISOString(),
+          read: false
+        }));
+        
+        return {
+          posts: [post, ...state.posts],
+          notifications: [...newNotifs, ...state.notifications]
+        };
+      }),
       deletePost: (postId) => set((state) => ({
         posts: state.posts.filter(p => p.id !== postId),
         comments: state.comments.filter(c => c.post_id !== postId),

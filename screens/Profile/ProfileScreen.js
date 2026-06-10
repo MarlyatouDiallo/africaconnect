@@ -16,6 +16,7 @@ import { useStore } from '../../store/zustand/useStore';
 import { THEME } from '../../utils/constants';
 import { usePosts } from '../../hooks/usePosts';
 import { useAuth } from '../../hooks/useAuth';
+import { formatRelativeTime } from '../../utils/helpers';
 import ProfileHeader from '../../components/ProfileHeader';
 import CommentModal from '../../components/CommentModal';
 
@@ -49,14 +50,30 @@ export default function ProfileScreen({ navigation, route }) {
   // Fetch favorites dynamically
   const { data: favoritePosts = [] } = useFavoritePosts();
 
-  // Activity Log history mock (premium feature: 3.2 Historique d'activité!)
-  const mockActivityLog = [
-    { id: 'act1', type: 'like', text: 'Vous avez aimé la photo de @ibrahim_lens sur le Serengeti.', time: 'Il y a 30 min' },
-    { id: 'act2', type: 'comment', text: 'Vous avez commenté la publication Wax de @fatou_wax_design.', time: 'Il y a 2 heures' },
-    { id: 'act3', type: 'post', text: 'Vous avez publié une nouvelle photo dans la catégorie "Tech & Innovation".', time: 'Il y a 1 jour' },
-    { id: 'act4', type: 'follow', text: 'Vous avez commencé à suivre @amadou_chef.', time: 'Il y a 2 jours' },
-    { id: 'act5', type: 'register', text: 'Bienvenue sur AfricaConnect ! Votre profil a été créé.', time: 'Il y a 5 jours' }
-  ];
+  // Generate dynamic activity log
+  const activityLog = [];
+  userPosts.forEach(post => {
+    activityLog.push({
+      id: `act_p_${post.id}`,
+      type: 'post',
+      text: `Vous avez publié une nouvelle photo dans la catégorie "${post.category}".`,
+      time: post.created_at
+    });
+  });
+  favoritePosts.forEach(post => {
+    activityLog.push({
+      id: `act_f_${post.id}`,
+      type: 'like',
+      text: `Vous avez mis en favoris une photo de @${post.user?.username}.`,
+      time: post.created_at // fallback, ideally we'd use the favorite's created_at
+    });
+  });
+  activityLog.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+  
+  const formattedActivityLog = activityLog.map(act => ({
+    ...act,
+    time: formatRelativeTime(act.time)
+  }));
 
   const handleLogout = async () => {
     await signOutUser();
@@ -206,7 +223,7 @@ export default function ProfileScreen({ navigation, route }) {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <FlatList
         key={activeTab === 'activity' ? 'list' : 'grid3'}
-        data={activeTab === 'posts' ? userPosts : activeTab === 'favorites' ? favoritePosts : mockActivityLog}
+        data={activeTab === 'posts' ? userPosts : activeTab === 'favorites' ? favoritePosts : formattedActivityLog}
         keyExtractor={(item) => item.id}
         renderItem={activeTab === 'activity' ? renderActivityItem : renderGridItem}
         numColumns={activeTab === 'activity' ? 1 : 3}

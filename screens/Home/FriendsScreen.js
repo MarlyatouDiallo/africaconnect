@@ -1,6 +1,6 @@
 // screens/Home/FriendsScreen.js
-import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, SafeAreaView, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../../store/zustand/useStore';
 import { THEME } from '../../utils/constants';
@@ -16,7 +16,14 @@ export default function FriendsScreen({ navigation }) {
   
   const { toggleFollow } = usePosts();
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const otherUsers = users.filter(u => u.id !== currentUser?.id);
+  
+  const filteredUsers = otherUsers.filter(u => 
+    u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (u.name && u.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const renderUser = ({ item }) => {
     const isFollowing = followers.some(f => f.follower_id === currentUser?.id && f.following_id === item.id);
@@ -50,12 +57,39 @@ export default function FriendsScreen({ navigation }) {
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.text }]}>Amis & Contacts</Text>
       </View>
+      
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <View style={[styles.searchBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Ionicons name="search" size={20} color={colors.textMuted} style={styles.searchIcon} />
+          <TextInput
+            placeholder="Rechercher un ami (nom ou prénom)..."
+            placeholderTextColor={colors.textMuted}
+            style={[styles.searchInput, { color: colors.text }]}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <FlatList
-        data={otherUsers}
+        data={filteredUsers}
         keyExtractor={(item) => item.id}
         renderItem={renderUser}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="people-outline" size={48} color={colors.textMuted} />
+            <Text style={[styles.emptyText, { color: colors.text }]}>Aucun utilisateur trouvé</Text>
+          </View>
+        }
       />
     </SafeAreaView>
   );
@@ -110,5 +144,36 @@ const styles = StyleSheet.create({
   followText: {
     fontSize: 13,
     fontWeight: 'bold',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    height: '100%',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
